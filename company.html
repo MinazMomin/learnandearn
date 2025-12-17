@@ -1,0 +1,147 @@
+<h2>Company Dashboard</h2>
+
+<input id="title" placeholder="Task title"><br>
+<input id="pay" placeholder="Pay"><br>
+<button onclick="createTask()">Create Task</button>
+
+<h3>Create Task</h3>
+
+<input id="taskTitle" placeholder="Task title">
+<input id="taskPay" placeholder="Pay amount">
+<button onclick="createTask()">Create Task</button>
+
+<p id="taskMsg"></p>
+
+<link rel="stylesheet" href="style.css">
+
+<script>
+const email = localStorage.getItem("email");
+
+fetch(`/api/me?email=${email}`)
+  .then(res => res.json())
+  .then(data => {
+    if (data.role !== "company") {
+      window.location.href = "login.html";
+    }
+  });
+</script>
+
+<script>
+  if (localStorage.getItem("role") !== "company") {
+    window.location.href = "login.html";
+  }
+</script>
+
+<script>
+function createTask() {
+    fetch("/api/create-task", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+            title: document.getElementById("title").value,
+            pay: document.getElementById("pay").value,
+            company: localStorage.getItem("workerEmail")
+        })
+    });
+}
+</script>
+
+<h3>Your Tasks</h3>
+<pre id="companyTasks"></pre>
+
+<script>
+fetch("/api/tasks")
+.then(res => res.json())
+.then(tasks => {
+    document.getElementById("companyTasks").textContent =
+        JSON.stringify(tasks, null, 2);
+});
+</script>
+
+<h2>Create Task</h2>
+
+<form id="taskForm">
+  <input type="text" id="taskTitle" placeholder="Task title" required>
+  <br><br>
+  <input type="number" id="taskPay" placeholder="Pay amount" required>
+  <br><br>
+  <button type="submit">Create Task</button>
+</form>
+
+<p id="taskMsg"></p>
+
+<script>
+function createTask() {
+    const title = document.getElementById("taskTitle").value;
+    const pay = document.getElementById("taskPay").value;
+    const company = localStorage.getItem("email");
+
+    fetch("/api/create-task", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ title, pay, company })
+    })
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById("taskMsg").textContent = "Task created!";
+    });
+}
+</script>
+</body>  
+
+<h3>Completed Work</h3>
+<pre id="completed"></pre>
+
+<h3>Approved Payments</h3>
+<ul id="payList"></ul>
+
+<script>
+fetch("/api/admin-data")
+.then(res => res.json())
+.then(data => {
+  const list = document.getElementById("payList");
+
+  data.users.forEach(u => {
+    u.approved.forEach(task => {
+      const li = document.createElement("li");
+      li.innerHTML = `
+        ${u.email} - ${task}
+        <button onclick="pay('${u.email}','${task}')">
+          Pay
+        </button>
+      `;
+      list.appendChild(li);
+    });
+  });
+});
+
+function pay(worker, task) {
+  fetch("/api/company-pay", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ worker, task })
+  })
+  .then(() => alert("Payment sent"));
+}
+</script>
+
+<script>
+fetch("/api/company-completed")
+  .then(res => res.json())
+  .then(data => {
+    document.getElementById("completed").textContent =
+      JSON.stringify(data, null, 2);
+  });
+</script>
+
+<script>
+  const role = localStorage.getItem("role");
+
+  if (role !== "company") {
+    alert("Company only");
+    window.location.href = "login.html";
+  }
+</script>
+   
+<button onclick="logout()">Logout</button>
+

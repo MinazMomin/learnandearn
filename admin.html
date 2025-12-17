@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <h1>ADMIN DASHBOARD</h1>
+
+  <h3>All Users</h3>
+  <pre id="users"></pre>
+
+  <h3>All Tasks</h3>
+  <pre id="tasks"></pre>
+
+  <button onclick="logout()">Logout</button>
+
+  <script>
+const email = localStorage.getItem("email");
+
+fetch(`/api/me?email=${email}`)
+  .then(res => res.json())
+  .then(data => {
+    if (data.role !== "admin") {
+      window.location.href = "login.html";
+    }
+  });
+</script>
+
+  <script>
+    // 🔒 Protect admin page
+    if (localStorage.getItem("role") !== "admin") {
+      window.location.href = "login.html";
+    }
+
+    // Load users
+    fetch("/api/admin/users")
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById("users").textContent =
+          JSON.stringify(data, null, 2);
+      });
+
+    // Load tasks
+    fetch("/api/admin/tasks")
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById("tasks").textContent =
+          JSON.stringify(data, null, 2);
+      });
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = "login.html";
+    }
+  </script>
+
+<h2>Admin Dashboard</h2>
+<h3>Approve Payments</h3>
+<ul id="approveList"></ul>
+
+<script>
+fetch("/api/admin-data")
+.then(res => res.json())
+.then(data => {
+  const list = document.getElementById("approveList");
+
+  data.users.forEach(u => {
+    u.completed.forEach(task => {
+      const li = document.createElement("li");
+      li.innerHTML = `
+        ${u.email} - ${task}
+        <button onclick="approve('${u.email}','${task}')">
+          Approve
+        </button>
+      `;
+      list.appendChild(li);
+    });
+  });
+});
+
+function approve(worker, task) {
+  fetch("/api/admin-approve", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ worker, task })
+  })
+  .then(() => alert("Approved"));
+}
+</script>
+
+<script>
+fetch("/api/admin-data")
+  .then(res => res.json())
+  .then(data => {
+    document.getElementById("adminData").textContent =
+      JSON.stringify(data, null, 2);
+  });
+</script>
+
+<button onclick="logout()">Logout</button>
+
+</body>
+
+<script>
+  const role = localStorage.getItem("role");
+
+  if (role !== "admin") {
+    alert("Admin only");
+    window.location.href = "login.html";
+  }
+</script>
+
+</html>

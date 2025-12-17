@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<h2>Welcome Worker!</h2>
+
+<h3>Your Earnings</h3>
+<span id="earnings">$0.00</span>
+
+<h3>Available Tasks</h3>
+<ul id="taskList"></ul>
+
+<h3>Completed Tasks</h3>
+<ul id="completedTasks"></ul>
+
+<button onclick="logout()">Logout</button>
+
+<script>
+const email = localStorage.getItem("email");
+
+fetch(`/api/me?email=${email}`)
+  .then(res => res.json())
+  .then(data => {
+    if (data.role !== "worker") {
+      window.location.href = "login.html";
+    }
+  });
+</script>
+
+<script>
+    if(localStorage.getItem("role")  !== "worker") {
+        window.location.href - "login.html";
+    }
+</script>
+
+<script>
+const role = localStorage.getItem("role");
+if (role !== "worker") {
+    alert("Access denied");
+    window.location.href = "login.html";
+}
+</script>
+
+<script src="script.js"></script>
+
+<script>
+fetch("/api/tasks")
+.then(res => res.json())
+.then(tasks => {
+    const list = document.getElementById("taskList");
+    tasks.forEach(task => {
+        const li = document.createElement("li");
+        li.textContent = task.title + " - $" + task.pay;
+        list.appendChild(li);
+    });
+});
+</script>
+
+<button onclick="logout()">Logout</button>
+
+</body>
+</html>

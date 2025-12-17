@@ -1,0 +1,7 @@
+users.append({
+    "email": "admin@learnandearn.com",
+    "password": "admin123",
+    "role": "admin",
+    "earnings": 0,
+    "completed": []
+})
